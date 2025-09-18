@@ -1,6 +1,6 @@
-# 🤖 LangGraph Human Interruption Agent
+# 🤖 Lakebase Human Interruption Agent
 
-LangGraph agent with human-in-the-loop approval capabilities for Databricks, featuring state persistence, Unity Catalog integration, and interruption workflows.
+LangGraph agent with human-in-the-loop approval capabilities for Databricks, featuring state persistence, Unity Catalog integration, and interruption workflows, powered by Databricks Agent Framework and Lakebase.
 
 ## ✨ Features
 
