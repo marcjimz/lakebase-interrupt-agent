@@ -1,0 +1,197 @@
+# Lakebase resources for LangGraph Human Interruption Demo
+
+resources:
+  schemas:
+    langgraph_schema:
+      catalog_name: ${var.catalog_name}
+      name: ${var.schema_name}
+      comment: "Schema for LangGraph Human Interruption demo tables"
+
+  tables:
+    human_review_queue_table:
+      catalog_name: ${var.catalog_name}
+      schema_name: ${var.schema_name}
+      name: human_review_queue
+      table_type: MANAGED
+      data_source_format: DELTA
+      comment: "Stores pending and completed human reviews for LangGraph interruptions"
+      columns:
+        - name: id
+          type: STRING
+          nullable: false
+          comment: "Unique identifier for the review record"
+        - name: thread_id
+          type: STRING
+          nullable: false
+          comment: "LangGraph thread identifier"
+        - name: interrupt_id
+          type: STRING
+          nullable: false
+          comment: "Specific interrupt identifier within the thread"
+        - name: interrupt_data
+          type: STRING
+          nullable: false
+          comment: "JSON-encoded interrupt data for human review"
+        - name: interrupt_type
+          type: STRING
+          nullable: true
+          comment: "Type of interruption (approval_request, content_review, choice_decision)"
+        - name: status
+          type: STRING
+          nullable: false
+          comment: "Review status (pending, completed, cancelled)"
+        - name: created_at
+          type: TIMESTAMP
+          nullable: false
+          comment: "Timestamp when the review was created"
+        - name: completed_at
+          type: TIMESTAMP
+          nullable: true
+          comment: "Timestamp when the review was completed"
+        - name: human_response
+          type: STRING
+          nullable: true
+          comment: "JSON-encoded human response data"
+        - name: priority
+          type: STRING
+          nullable: true
+          comment: "Priority level (low, medium, high, critical)"
+        - name: risk_score
+          type: DOUBLE
+          nullable: true
+          comment: "Calculated risk score for the action (0.0-1.0)"
+        - name: reviewer_id
+          type: STRING
+          nullable: true
+          comment: "Identifier of the human reviewer"
+        - name: review_duration_seconds
+          type: INTEGER
+          nullable: true
+          comment: "Time taken for human review in seconds"
+
+    agent_metrics_table:
+      catalog_name: ${var.catalog_name}
+      schema_name: ${var.schema_name}
+      name: agent_metrics
+      table_type: MANAGED
+      data_source_format: DELTA
+      comment: "Tracks LangGraph agent performance and interruption metrics"
+      columns:
+        - name: metric_id
+          type: STRING
+          nullable: false
+          comment: "Unique identifier for the metric record"
+        - name: thread_id
+          type: STRING
+          nullable: false
+          comment: "Associated thread identifier"
+        - name: metric_type
+          type: STRING
+          nullable: false
+          comment: "Type of metric (interruption_count, processing_time, etc.)"
+        - name: metric_value
+          type: DOUBLE
+          nullable: false
+          comment: "Numeric value of the metric"
+        - name: metric_metadata
+          type: STRING
+          nullable: true
+          comment: "Additional JSON metadata for the metric"
+        - name: timestamp
+          type: TIMESTAMP
+          nullable: false
+          comment: "When the metric was recorded"
+        - name: agent_version
+          type: STRING
+          nullable: true
+          comment: "Version of the agent that generated this metric"
+
+    agent_audit_log:
+      catalog_name: ${var.catalog_name}
+      schema_name: ${var.schema_name}
+      name: agent_audit_log
+      table_type: MANAGED
+      data_source_format: DELTA
+      comment: "Comprehensive audit log for all agent actions and decisions"
+      columns:
+        - name: log_id
+          type: STRING
+          nullable: false
+          comment: "Unique identifier for the log entry"
+        - name: thread_id
+          type: STRING
+          nullable: false
+          comment: "Associated thread identifier"
+        - name: action_type
+          type: STRING
+          nullable: false
+          comment: "Type of action performed"
+        - name: action_data
+          type: STRING
+          nullable: true
+          comment: "JSON data associated with the action"
+        - name: user_query
+          type: STRING
+          nullable: true
+          comment: "Original user query that triggered this action"
+        - name: agent_decision
+          type: STRING
+          nullable: true
+          comment: "Decision made by the agent"
+        - name: human_override
+          type: BOOLEAN
+          nullable: true
+          comment: "Whether human intervention overrode agent decision"
+        - name: timestamp
+          type: TIMESTAMP
+          nullable: false
+          comment: "When the action was performed"
+        - name: session_id
+          type: STRING
+          nullable: true
+          comment: "User session identifier if available"
+
+    validation_results_table:
+      catalog_name: ${var.catalog_name}
+      schema_name: ${var.schema_name}
+      name: validation_results
+      table_type: MANAGED
+      data_source_format: DELTA
+      comment: "Results of validation rule evaluations"
+      columns:
+        - name: validation_id
+          type: STRING
+          nullable: false
+          comment: "Unique identifier for the validation run"
+        - name: thread_id
+          type: STRING
+          nullable: false
+          comment: "Associated thread identifier"
+        - name: rule_name
+          type: STRING
+          nullable: false
+          comment: "Name of the validation rule"
+        - name: rule_triggered
+          type: BOOLEAN
+          nullable: false
+          comment: "Whether the rule was triggered"
+        - name: rule_severity
+          type: STRING
+          nullable: false
+          comment: "Severity level of the rule (low, medium, high, critical)"
+        - name: rule_category
+          type: STRING
+          nullable: false
+          comment: "Category of the rule (financial, data, operational, etc.)"
+        - name: rule_message
+          type: STRING
+          nullable: true
+          comment: "Message generated by the rule"
+        - name: validation_timestamp
+          type: TIMESTAMP
+          nullable: false
+          comment: "When the validation was performed"
+        - name: overall_risk_score
+          type: DOUBLE
+          nullable: true
+          comment: "Overall risk score for this validation run"

@@ -1,0 +1,55 @@
+# @TODO: Pending work to complete this.
+# # Databricks Asset Bundle configuration for LangGraph Human Interruption Demo
+# bundle:
+#   name: langgraph-human-interrupt
+
+# include:
+#   - resources/*.yml
+
+# variables:
+#   catalog_name:
+#     description: "Catalog name for Lakebase tables"
+#     default: "main"
+  
+#   schema_name:
+#     description: "Schema name for Lakebase tables"
+#     default: "langgraph_demo"
+  
+#   model_name:
+#     description: "Name for the registered model"
+#     default: "langgraph_human_interrupt_model"
+  
+#   endpoint_name:
+#     description: "Model serving endpoint name"
+#     default: "langgraph-human-interrupt-endpoint"
+
+# targets:
+#   dev:
+#     default: true
+#     workspace:
+#       host: https://adb-2482403303441070.10.azuredatabricks.net/
+#     variables:
+#       catalog_name: "marcin_agent_demo"
+#       schema_name: "langgraph_demo_dev"
+#       model_name: "langgraph_human_interrupt_model_dev"
+#       endpoint_name: "langgraph-human-interrupt-dev"
+  
+# #   staging:
+# #     workspace:
+# #       host: ${workspace.host}
+# #     variables:
+# #       catalog_name: "staging_catalog"
+# #       schema_name: "langgraph_demo_staging"
+# #       model_name: "langgraph_human_interrupt_model_staging"
+# #       endpoint_name: "langgraph-human-interrupt-staging"
+  
+# #   prod:
+# #     workspace:
+# #       host: ${workspace.host}
+# #     variables:
+# #       catalog_name: "prod_catalog"
+# #       schema_name: "langgraph_demo_prod"
+# #       model_name: "langgraph_human_interrupt_model_prod"
+# #       endpoint_name: "langgraph-human-interrupt-prod"
+
+# # # No artifacts needed - using sys.path approach for cloned repo
