@@ -108,6 +108,12 @@ class LangGraphChatAgent(ChatAgent):
         context: Optional[ChatContext] = None,
         custom_inputs: Optional[dict[str, Any]] = None,
     ) -> ChatAgentResponse:
+        # Handle resume from interruption via custom_inputs
+        if custom_inputs and custom_inputs.get("resume"):
+            thread_id = custom_inputs.get("thread_id")
+            command_value = custom_inputs.get("command_value", "approved")
+            return self.resume(command_value=command_value, thread_id=thread_id)
+
         # Extract thread_id from custom_inputs if available, otherwise generate new
         if custom_inputs and "thread_id" in custom_inputs:
             thread_id = custom_inputs["thread_id"]
