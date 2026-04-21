@@ -1,6 +1,6 @@
 # 🤖 Lakebase Human Interruption Agent
 
-LangGraph agent with human-in-the-loop approval capabilities for Databricks, featuring state persistence, Unity Catalog integration, and interruption workflows, powered by Databricks Agent Framework and Lakebase.
+LangGraph agent with human-in-the-loop approval capabilities for Databricks, featuring state persistence, Unity Catalog integration, and interruption workflows, powered by Databricks Agent Framework and Lakebase Autoscaling.
 
 ## ✨ Features
 
@@ -12,11 +12,11 @@ Interruption mechanism that automatically pauses execution before high-risk oper
 - Continues seamlessly once approved or handles rejection gracefully
 - ***Future ToDo***: use user permissioning and roles to facilitate continuation of threads
 
-### 💾 State Persistence with Lakebase
-Built on PostgreSQL checkpointer integration using Databricks Lakebase:
+### 💾 State Persistence with Lakebase Autoscaling
+Built on PostgreSQL checkpointer integration using Databricks Lakebase Autoscaling:
 - Conversation state preservation across interruptions and restarts
 - Thread-based conversation tracking for multi-session continuity
-- Automatic credential management through Databricks workspace client
+- Automatic credential management through Databricks Postgres API with ephemeral tokens
 
 ### 🔧 Unity Catalog Function Integration
 Native support for Databricks Unity Catalog functions as callable tools:
@@ -41,7 +41,7 @@ dbutils.library.restartPython()
 ### 3. Configure Environment
 ```python
 # Set up configuration widgets
-dbutils.widgets.text("lakebase_instance", "agent-human-interaction", "Lakebase Instance")
+dbutils.widgets.text("lakebase_project", "human-interruption-agent", "Lakebase Project")
 dbutils.widgets.text("db_client_id", "<service-principal-uuid>", "Client ID")
 dbutils.widgets.text("db_client_secret", "<secret>", "Client Secret")
 dbutils.widgets.text("endpoint_name", "databricks-meta-llama-3-3-70b-instruct", "Model Endpoint")
@@ -49,7 +49,7 @@ dbutils.widgets.text("endpoint_name", "databricks-meta-llama-3-3-70b-instruct", 
 # Set environment variables
 import os
 os.environ["ENDPOINT_NAME"] = dbutils.widgets.get("endpoint_name")
-os.environ["LAKEBASE_INSTANCE"] = dbutils.widgets.get("lakebase_instance")
+os.environ["LAKEBASE_PROJECT"] = dbutils.widgets.get("lakebase_project")
 os.environ["DATABRICKS_CLIENT_ID"] = dbutils.widgets.get("db_client_id")
 os.environ["DATABRICKS_CLIENT_SECRET"] = dbutils.widgets.get("db_client_secret")
 ```
@@ -59,11 +59,11 @@ os.environ["DATABRICKS_CLIENT_SECRET"] = dbutils.widgets.get("db_client_secret")
 from src.lakebase.database import LakebaseDatabase
 from langgraph.checkpoint.postgres import PostgresSaver
 
-# Initialize Lakebase connection
+# Initialize Lakebase Autoscaling connection
 lb = LakebaseDatabase(host=os.getenv("DATABRICKS_HOST"))
 conn_string = lb.initialize_connection(
     user=os.getenv("DATABRICKS_CLIENT_ID"),
-    instance_name=os.getenv("LAKEBASE_INSTANCE")
+    project_name=os.getenv("LAKEBASE_PROJECT")
 )
 
 # Setup checkpointer tables
@@ -97,18 +97,20 @@ print(response.messages[-1].content)
 
 ### Databricks Managed Identity
 - Service principal with client ID and secret
-- Database role assignment in Lakebase
+- Database role assignment in Lakebase project
 - Required environment variables:
   ```bash
   DATABRICKS_CLIENT_ID=<uuid>
   DATABRICKS_CLIENT_SECRET=<secret>
   DATABRICKS_HOST=<workspace-url>
+  LAKEBASE_PROJECT=<project-name>
   ```
 
-### Lakebase (PostgreSQL)
-- Lakebase instance created with Databricks Managed Identity integration
+### Lakebase Autoscaling (PostgreSQL)
+- Lakebase Autoscaling project with a production branch and read-write endpoint
 - Database: `databricks_postgres` with SSL required
 - PostgresSaver checkpoint tables for state persistence
+- Uses the Databricks Postgres API (`w.postgres.*`) for credential generation
 
 ### Model Serving Endpoint
 - Databricks Foundation Model endpoint (e.g., `databricks-meta-llama-3-3-70b-instruct`)

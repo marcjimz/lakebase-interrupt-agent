@@ -523,8 +523,8 @@ class HumanInterruptionAgent:
         if not conn_string:
             lakebase_db = LakebaseDatabase(host=os.getenv("DATABRICKS_HOST"))
             conn_string = lakebase_db.initialize_connection(
-                user=os.getenv("DATABRICKS_CLIENT_ID"), 
-                instance_name=os.getenv("LAKEBASE_INSTANCE")
+                user=os.getenv("DATABRICKS_CLIENT_ID"),
+                project_name=os.getenv("LAKEBASE_PROJECT")
             )
         
         # Wire UC function client once
@@ -565,7 +565,7 @@ if not conn_string:
     lakebase_db = LakebaseDatabase(host=os.getenv("DATABRICKS_HOST"))
     conn_string = lakebase_db.initialize_connection(
         user=os.getenv("DATABRICKS_CLIENT_ID"),
-        instance_name=os.getenv("LAKEBASE_INSTANCE")
+        project_name=os.getenv("LAKEBASE_PROJECT")
     )
 
 # Check if human approval should be required from environment
