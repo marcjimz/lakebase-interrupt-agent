@@ -178,6 +178,9 @@ class LangGraphChatAgent(ChatAgent):
             out_messages = []
             if result.get("messages"):
                 new_messages = result["messages"][num_existing:]
+                # Fallback: if slice is empty, return at least the last message
+                if not new_messages:
+                    new_messages = [result["messages"][-1]]
                 for msg in new_messages:
                     out_messages.append(self._parse_message(msg))
 
@@ -482,6 +485,9 @@ class LangGraphChatAgent(ChatAgent):
             out_messages = []
             if result.get("messages"):
                 new_messages = result["messages"][num_existing:]
+                # Fallback: if slice is empty, return at least the last message
+                if not new_messages:
+                    new_messages = [result["messages"][-1]]
                 for msg in new_messages:
                     out_messages.append(self._parse_message(msg))
 
