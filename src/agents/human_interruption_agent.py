@@ -142,9 +142,10 @@ class LangGraphChatAgent(ChatAgent):
             # Convert messages for the request
             converted_messages = self._convert_messages_to_dict(messages_to_send)
 
-            # Count existing messages so we can return only new ones
+            # Count messages to skip: existing state + input messages we're sending
             existing_state = agent.get_state(config)
             num_existing = len(existing_state.values.get("messages", [])) if existing_state.values else 0
+            num_to_skip = num_existing + len(converted_messages)
 
             # Invoke the agent
             result = agent.invoke({"messages": converted_messages}, config)
@@ -174,10 +175,10 @@ class LangGraphChatAgent(ChatAgent):
                             }
                         }]
 
-            # Parse only NEW messages from this turn (skip historical ones)
+            # Parse only NEW messages from this turn (skip existing + input)
             out_messages = []
             if result.get("messages"):
-                new_messages = result["messages"][num_existing:]
+                new_messages = result["messages"][num_to_skip:]
                 # Fallback: if slice is empty, return at least the last message
                 if not new_messages:
                     new_messages = [result["messages"][-1]]
@@ -433,6 +434,7 @@ class LangGraphChatAgent(ChatAgent):
             num_existing = len(existing_state.values.get("messages", [])) if existing_state.values else 0
 
             # Handle different command values
+            num_input = 0  # Track input messages added during resume
             if command_value == "rejected":
                 # Update the state to add a rejection message and clear tool calls
                 state = agent.get_state(config)
@@ -448,6 +450,7 @@ class LangGraphChatAgent(ChatAgent):
                     {"messages": [rejection_message]},
                     as_node="tools"  # Pretend we're the tools node to skip it
                 )
+                num_input = 1  # rejection message added via update_state
                 # Now continue execution from after tools
                 result = agent.invoke(None, config)
             elif command_value is None or command_value == "approved":
@@ -460,8 +463,11 @@ class LangGraphChatAgent(ChatAgent):
                     "content": str(command_value),
                     "id": str(uuid.uuid4())
                 }
+                num_input = 1  # feedback message
                 result = agent.invoke({"messages": [feedback_message]}, config)
-            
+
+            num_to_skip = num_existing + num_input
+
             # Check if still interrupted (in case there are more tool calls)
             state = agent.get_state(config)
             if state.next:
@@ -473,7 +479,7 @@ class LangGraphChatAgent(ChatAgent):
                             pending_tool_calls = last_message.tool_calls
                         elif isinstance(last_message, dict):
                             pending_tool_calls = last_message.get('tool_calls')
-                        
+
                         interrupt_data = [{
                             "value": {
                                 "tool_calls": pending_tool_calls,
@@ -481,10 +487,10 @@ class LangGraphChatAgent(ChatAgent):
                             }
                         }]
 
-            # Parse only NEW messages from this turn (skip historical ones)
+            # Parse only NEW messages from this turn (skip existing + input)
             out_messages = []
             if result.get("messages"):
-                new_messages = result["messages"][num_existing:]
+                new_messages = result["messages"][num_to_skip:]
                 # Fallback: if slice is empty, return at least the last message
                 if not new_messages:
                     new_messages = [result["messages"][-1]]
