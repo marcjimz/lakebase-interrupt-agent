@@ -141,7 +141,11 @@ class LangGraphChatAgent(ChatAgent):
             
             # Convert messages for the request
             converted_messages = self._convert_messages_to_dict(messages_to_send)
-            
+
+            # Count existing messages so we can return only new ones
+            existing_state = agent.get_state(config)
+            num_existing = len(existing_state.values.get("messages", [])) if existing_state.values else 0
+
             # Invoke the agent
             result = agent.invoke({"messages": converted_messages}, config)
             
@@ -169,13 +173,14 @@ class LangGraphChatAgent(ChatAgent):
                                 "message": "Tool execution requires approval"
                             }
                         }]
-            
-            # Parse messages
+
+            # Parse only NEW messages from this turn (skip historical ones)
             out_messages = []
             if result.get("messages"):
-                for msg in result["messages"]:
+                new_messages = result["messages"][num_existing:]
+                for msg in new_messages:
                     out_messages.append(self._parse_message(msg))
-            
+
             # Add a helpful message about approval if interrupted
             if is_interrupted and pending_tool_calls:
                 # Extract tool details for the message
@@ -419,7 +424,11 @@ class LangGraphChatAgent(ChatAgent):
         with Connection.connect(self.conn_string) as conn:
             checkpointer = PostgresSaver(conn)
             agent = self._create_agent_with_checkpointer(checkpointer)
-            
+
+            # Count existing messages so we can return only new ones
+            existing_state = agent.get_state(config)
+            num_existing = len(existing_state.values.get("messages", [])) if existing_state.values else 0
+
             # Handle different command values
             if command_value == "rejected":
                 # Update the state to add a rejection message and clear tool calls
@@ -468,13 +477,14 @@ class LangGraphChatAgent(ChatAgent):
                                 "message": "Tool execution requires approval"
                             }
                         }]
-            
-            # Parse messages
+
+            # Parse only NEW messages from this turn (skip historical ones)
             out_messages = []
             if result.get("messages"):
-                for msg in result["messages"]:
+                new_messages = result["messages"][num_existing:]
+                for msg in new_messages:
                     out_messages.append(self._parse_message(msg))
-        
+
         # Build response with state info
         custom_outputs = {
             "thread_id": thread_id,
